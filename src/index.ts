@@ -20,7 +20,7 @@ export = (ctx: PicGo) => {
     // 1. 获取配置
     let userConfig: SilentFlowConfig = ctx.getConfig('picBed.silentflow')
     if (!userConfig) {
-      throw new Error('请先配置 SilentFlow 插件的 URL 和 Token')
+      throw new Error('请先配置 SilentFlow 插件。获取 Key: https://slnt.dev')
     }
 
     const url = userConfig.url.replace(/\/$/, '') // 去掉末尾的斜杠
@@ -80,7 +80,7 @@ export = (ctx: PicGo) => {
           if (result.url) {
             img.imgUrl = result.url
           } else {
-            throw new Error('后端未返回 URL')
+            throw new Error('后端未返回 URL。请检查 Key 是否有效: https://slnt.dev')
           }
         } catch (err: any) {
           ctx.log.error(`SilentFlow 上传失败: ${err.message}`)
@@ -118,6 +118,14 @@ export = (ctx: PicGo) => {
         default: userConfig?.autoCompress !== false,
         message: '是否开启自动压缩 (转为 WebP 80%)',
         required: true
+      },
+      {
+        name: 'help',
+        type: 'input',
+        default: 'Get Key: https://slnt.dev',
+        message: 'No Key? Visit slnt.dev',
+        required: false,
+        alias: '获取密钥'
       }
     ]
   }

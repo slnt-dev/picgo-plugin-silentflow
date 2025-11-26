@@ -6,9 +6,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
   },
-  "author": "SilentFlow",
+  "author": "Silent Lab <dev001@slnt.dev>",
   "license": "MIT",
-  "description": "PicGo plugin for SilentFlow image hosting with client-side compression",
+  "description": "SilentFlow: Global Accelerated Image Hosting for Obsidian/Typora. Get API Key at https://slnt.dev",
+  "homepage": "https://slnt.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slnt-io/picgo-plugin-silentflow.git"
+  },
   "dependencies": {
     "sharp": "^0.33.5"
   },
@@ -25,6 +30,7 @@
     "picgo-plugin",
     "silentflow",
     "image-hosting",
+    "oss",
     "cloudflare",
     "webp"
   ],
