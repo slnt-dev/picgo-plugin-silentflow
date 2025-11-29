@@ -1,3 +1,4 @@
+import { describe, expect, it, jest, beforeEach } from '@jest/globals'
 import plugin from '../src/index'
 
 describe('PicGo Plugin SilentFlow', () => {

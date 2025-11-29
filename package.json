@@ -7,7 +7,7 @@
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
-  "author": "Silent Lab <dev001@slnt.dev>",
+  "author": "Silent Lab",
   "license": "MIT",
   "description": "SilentFlow: Global Accelerated Image Hosting for Obsidian/Typora. Get API Key at https://slnt.dev",
   "homepage": "https://slnt.dev",

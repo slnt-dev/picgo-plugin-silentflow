@@ -5,13 +5,76 @@ interface SilentFlowConfig {
   token: string
 }
 
-export = (ctx: PicGo) => {
+export = (ctx: any) => {
   const register = () => {
+    // 1. 注册上传器
     ctx.helper.uploader.register('silentflow', {
       handle,
       name: 'SilentFlow',
       config: config
     })
+
+    if (ctx.gui) {
+      // 2. 注册 GUI 菜单 (插件列表右下角齿轮/右键菜单)
+      (ctx as any).gui.menu.register('silentflow', [
+        {
+          label: '📊 查看剩余用量',
+          async handle (ctx: any, guiApi: any) {
+            try {
+              // 注意：这里必须读取 picBed.silentflow，因为这是用户配置上传器的地方
+              const userConfig: SilentFlowConfig = ctx.getConfig('picBed.silentflow')
+              
+              if (!userConfig || !userConfig.url || !userConfig.token) {
+                throw new Error('请先在上传器设置中配置 URL 和 Token')
+              }
+
+              const url = userConfig.url.replace(/\/$/, '')
+              
+              // 发起请求查询用量 (假设你的后端有 /user/usage 接口)
+              const res = await ctx.request({
+                method: 'GET',
+                url: `${url}/user/usage`,
+                headers: { 
+                  'Authorization': `Bearer ${userConfig.token}`,
+                  'User-Agent': 'PicGo-Plugin-SilentFlow/1.0'
+                },
+                json: true
+              })
+
+              // 格式化显示 (根据你实际后端返回的数据结构修改)
+              // 假设返回结构是 { storage: { percent: string }, traffic: { used: number } }
+              // 如果后端接口不同，请修改下方的 body 拼接逻辑
+              const storageText = res.storage ? `已用存储: ${res.storage.percent}` : '存储数据获取中...'
+              const trafficText = res.traffic ? `本月流量: ${(res.traffic.used / 1024 / 1024).toFixed(2)} MB` : ''
+
+              // 弹窗通知
+              ctx.emit('notification', {
+                title: 'SilentFlow 用量统计',
+                body: `${storageText}\n${trafficText}`
+              })
+
+            } catch (err: any) {
+              ctx.log.error(`查询失败: ${err.message}`)
+              ctx.emit('notification', {
+                title: '查询用量失败',
+                body: '请检查配置或网络，详情查看日志'
+              })
+            }
+          }
+        },
+        {
+          label: '🌐 打开管理后台',
+          handle (ctx: any, guiApi: any) {
+            // 调用 Electron 的 shell 打开外部浏览器
+            try {
+              require('electron').shell.openExternal('https://slnt.dev')
+            } catch (e) {
+              ctx.log.error('无法打开浏览器，非 Electron 环境？请手动打开 https://slnt.dev')
+            }
+          }
+        }
+      ])
+    }
   }
 
   const handle = async (ctx: any) => {
@@ -51,10 +114,8 @@ export = (ctx: PicGo) => {
         }
 
         try {
-          // 4. 发起请求 (使用 PicGo 内置的 request)
+          // 4. 发起请求
           const body = await ctx.request(postConfig)
-
-          // 5. 解析返回结果
           const result = typeof body === 'string' ? JSON.parse(body) : body
 
           if (result.url) {
@@ -81,22 +142,22 @@ export = (ctx: PicGo) => {
       {
         name: 'url',
         type: 'input',
-        default: userConfig?.url || '',
-        message: '后端 Worker 地址 (例如 https://xxx.workers.dev)',
+        default: userConfig?.url || 'https://slnt.dev',
+        message: '后端 Worker 地址',
         required: true
       },
       {
         name: 'token',
         type: 'password',
         default: userConfig?.token || '',
-        message: 'API Key (例如 sk_test_...)',
+        message: 'API Key (例如 sk_live_...)',
         required: true
       },
       {
         name: 'help',
         type: 'input',
-        default: 'Get Key: https://slnt.dev',
-        message: 'No Key? Visit slnt.dev',
+        default: '还没有 Key? 访问 slnt.dev 获取',
+        message: '还没有 Key? 访问 slnt.dev 获取',
         required: false,
         alias: '获取密钥'
       }
